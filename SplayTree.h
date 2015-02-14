@@ -25,6 +25,7 @@ private :
 	int judgeCase(Node<T1, T2> *node, const T1 &id);
 	Node<T1, T2>* findRMN(const Node<T1, T2>* const node) const;
 	Node<T1, T2>* findLMN(const Node<T1, T2>* const node) const;
+	void printNode(Node<T1, T2> *node) const;
 public :
 	SplayTree();
 	SplayTree(int(*compare)(const T1 &a, const T1 &b));
@@ -491,9 +492,44 @@ Break_While_Loop : // reassembly
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
 bool SplayTree<T1, T2>::Insert(const T1 &id) {
+	Node<T1, T2> *tmp = root;
+	Node<T1, T2> *nxt = root;
+	if (root == NULL) {
+		root = new Node<T1, T2>(id);
+		return true;
+	}
 
+	do {
+		tmp = nxt;
+		if (cmp(id, tmp->getID()) < 0)
+			nxt = tmp->getLft();
+		else if (cmp(id, tmp->getID()) > 0)
+			nxt = tmp->getRgt();
+		else
+			break;
+	} while (nxt != NULL);
+	
+	if (cmp(id, tmp->getID()) = 0)
+		return true;
+	if (cmp(id, tmp->getID()) < 0)
+		tmp->AddLft(id);
+	else if (cmp(id, tmp->getID()) > 0)
+		tmp->AddRgt(id);
+	splay(root, id);
+	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//        NAME: Delete
+// DESCRIPTION: The user interface of deleting a node from the Splay tree.
+//   ARGUMENTS: const T1 &id - the id of the new node that is to be deleted
+// USES GLOBAL: none
+// MODIFIES GL: root (possible)
+//     RETURNS: bool
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-13
+//							KC 2015-02-13
+////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
 bool SplayTree<T1, T2>::Delete(const T1 &id) {
 }
@@ -517,6 +553,30 @@ bool SplayTree<T1, T2>::empty() {
 	root = NULL;
 	size = 0;
 	return true;
+}
+
+template<class T1, class T2>
+T2* SplayTree<T1, T2>::find(const T1 &id) const;
+
+////////////////////////////////////////////////////////////////////////////////
+//        NAME: print
+// DESCRIPTION: To print the whole tree inorderly.
+//   ARGUMENTS: none
+// USES GLOBAL: none
+// MODIFIES GL: none
+//     RETURNS: bool
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-14
+//							KC 2015-02-14
+////////////////////////////////////////////////////////////////////////////////
+template<class T1, class T2>
+bool SplayTree<T1, T2>::print() const {
+	if (root != NULL) {
+		root->print();
+		return true;
+	}
+	else
+		return false;
 }
 
 #endif
