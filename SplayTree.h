@@ -2,6 +2,7 @@
 #define SPLAYTREE_H
 
 #include "TreeNode.h"
+using namespace std;
 
 class SplayERR {
 public :
@@ -19,6 +20,11 @@ private :
 	Node<T1, T2> *root;
 	int size;
 	int(*cmp)(const T1 &a, const T1 &b);
+	
+	bool splay(Node<T1, T2> *node, const T1 &id);
+	int judgeCase(Node<T1, T2> *node, const T1 &id);
+	Node<T1, T2>* findRMN(const Node<T1, T2>* const node) const;
+	Node<T1, T2>* findLMN(const Node<T1, T2>* const node) const;
 public :
 	SplayTree();
 	SplayTree(int(*compare)(const T1 &a, const T1 &b));
@@ -237,6 +243,239 @@ bool SplayTree<T1, T2>::addRoot(const Node<T1, T2> &New) {
 	root = new Node<T1, T2>(New);
 	size = calcSize(root);
 	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//        NAME: judgeCase
+// DESCRIPTION: To decide the rotation type for splay function.
+//   ARGUMENTS: Node<T1, T2> *node - the root of the subtree that needs rotation
+//				const T1 &id - the id that is to find
+// USES GLOBAL: none
+// MODIFIES GL: none
+//     RETURNS: int
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-14
+//							KC 2015-02-14
+////////////////////////////////////////////////////////////////////////////////
+template<class T1, class T2>
+int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) {
+	
+	// no adjust needed
+	if (cmp(id, node->getID()) = 0)
+		return 0;
+	if ((cmp(id, node->getID()) < 0) && (node->getLft() == NULL))
+		return 0;
+	if ((cmp(id, node->getID()) > 0) && (node->getRgt() == NULL))
+		return 0;
+	
+	// zig
+	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) = 0))
+		return 1;
+	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) < 0) && (node->getLft()->getLft() == NULL))
+		return 1;
+	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) > 0) && (node->getLft()->getRgt() == NULL))
+		return 1;
+	
+	// zag
+	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) = 0))
+		return 2;
+	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) < 0) && (node->getRgt()->getLft() == NULL))
+		return 2;
+	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) > 0) && (node->getRgt()->getRgt() == NULL))
+		return 2;
+
+	// zig-zig
+	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) < 0))
+		return 3;
+	
+	// zag-zag
+	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) > 0))
+		return 4;
+
+	// zig-zag
+	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) > 0))
+		return 5;
+	
+	// zag-zig
+	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) < 0))
+		return 6;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//        NAME: findRMN
+// DESCRIPTION: To find the right most node in the subtree.
+//   ARGUMENTS: Node<T1, T2> *node - the root of the subtree
+// USES GLOBAL: none
+// MODIFIES GL: none
+//     RETURNS: Node<T1, T2>*
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-14
+//							KC 2015-02-14
+////////////////////////////////////////////////////////////////////////////////
+template<class T1, class T2>
+Node<T1, T2>* SplayTree<T1, T2>::findRMN(const Node<T1, T2>* const node) const {
+	Node<T1, T2>* RMN = &(*node);
+	if (RMN == NULL)
+		return NULL;
+	while (RMN->getRgt() != NULL)
+		RMN = RMN->getRgt();
+	return RMN;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//        NAME: findLMN
+// DESCRIPTION: To find the left most node in the subtree.
+//   ARGUMENTS: Node<T1, T2> *node - the root of the subtree
+// USES GLOBAL: none
+// MODIFIES GL: none
+//     RETURNS: Node<T1, T2>*
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-14
+//							KC 2015-02-14
+////////////////////////////////////////////////////////////////////////////////
+template<class T1, class T2>
+Node<T1, T2>* SplayTree<T1, T2>::findLMN(const Node<T1, T2>* const node) const {
+	Node<T1, T2>* LMN = &(*node);
+	if (LMN == NULL)
+		return NULL;
+	while (LMN->getLft() != NULL)
+		LMN = RMN->getLft();
+	return LMN;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//        NAME: splay
+// DESCRIPTION: To iteratively splay a subtree with the root "node" and ID "id".
+//   ARGUMENTS: Node<T1, T2> *N0 - the root of the subtree that is to be splayed
+//				const T1 &id - the id of the node that is to be rotated to the top
+// USES GLOBAL: none
+// MODIFIES GL: root (possible)
+//     RETURNS: bool
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-14
+//							KC 2015-02-14
+////////////////////////////////////////////////////////////////////////////////
+template<class T1, class T2>
+bool SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
+	Node<T1, T2> *L = NULL;
+	Node<T1, T2> *R = NULL;
+	Node<T1, T2> *N1 = NULL;
+	Node<T1, T2> *N2 = NULL;
+	Node<T1, T2> *RMN = NULL;
+	Node<T1, T2> *LMN = NULL;
+	if (N0 == NULL)
+		return NULL;
+	while ((N0 != NULL) && (N0->getID() != id)) {
+		Case = judgeCase(N0, id);
+		switch(Case) {
+		case 0: // found
+			goto Break_While_Loop;
+
+		case 1: // zig
+			N1 = N0->getLft();
+			N0->AddLft(NULL);
+			LMN = findLMN(R);
+			if (LMN == NULL)
+				R = N0;
+			else
+				LMN->AddLft(N0);
+			N0 = N1;
+			N1 = NULL;
+
+		case 2: // zag
+			N1 = N0->getRgt();
+			N0->AddRgt(NULL);
+			RMN = findRMN(L);
+			if (RMN == NULL)
+				L = N0;
+			else
+				RMN->AddRgt(N0);
+			N0 = N1;
+			N1 = NULL;
+
+		case 3: // zig-zig
+			N1 = N0->getLft();
+			N2 = N1->getLft();
+			N0->AddLft(N1->getRgt());
+			N1->AddRgt(N0);
+			N1->AddLft(NULL);
+			LMN = findLMN(R);
+			if (RMN == NULL)
+				R = N1;
+			else
+				LMN->AddLft(N1);
+			N0 = N2;
+			N1 = N2 = NULL;
+
+		case 4: // zag-zag
+			N1 = N0->getRgt();
+			N2 = N1->getRgt();
+			N0->AddRgt(N1->getLft());
+			N1->AddLft(N0);
+			N1->AddRgt(NULL);
+			RMN = findRMN(L);
+			if (RMN == NULL)
+				L = N1;
+			else
+				RMN->AddLft(N1);
+			N0 = N2;
+			N1 = N2 = NULL;
+
+		case 5: // zig-zag
+			N1 = N0->getLft();
+			N2 = N1->getRgt();
+			N0->AddLft(NULL);
+			N1->AddRgt(NULL);
+			LMN = findLMN(R);
+			RMN = findRMN(L);
+			if (LMN == NULL)
+				R = N0;
+			else
+				LMN->AddLft(N0);
+			if (RMN == NULL)
+				L = N1;
+			else
+				RMN->AddRgt(N1);
+			N0 = N2;
+			N1 = N2 = NULL;
+
+		case 6: // zag-zig
+			N1 = N0->getRgt();
+			N2 = N1->getLft();
+			N0->AddRgt(NULL);
+			N1->AddLft(NULL);
+			LMN = findLMN(R);
+			RMN = findRMN(L);
+			if (LMN == NULL)
+				R = N1;
+			else
+				LMN->AddLft(N1);
+			if (RMN == NULL)
+				L = N0;
+			else
+				RMN->AddRgt(N0);
+			N0 = N2;
+			N1 = N2 = NULL;
+
+		default:
+			throw SplayERR("Case out of range");
+			return false;
+		}
+	}
+
+Break_While_Loop : // reassembly
+	LMN = findLMN(R);
+	RMN = findRMN(L);
+	if (LMN == NULL)
+		R = N0->getRgt();
+	else
+		LMN->AddLft(N0-getRgt());
+	if (RMN == NULL)
+		L = N0->getLft();
+	else
+		RMN->AddRgt(N0->getLft());
+	N0->AddLft(L);
+	N0->AddRgt(R);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
