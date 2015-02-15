@@ -20,11 +20,12 @@ private :
 	Node<T1, T2> *root;
 	int size;
 	int(*cmp)(const T1 &a, const T1 &b);
-	
-	bool splay(Node<T1, T2> *node, const T1 &id);
+
+
 	int judgeCase(Node<T1, T2> *node, const T1 &id);
-	Node<T1, T2>* findRMN(const Node<T1, T2>* const node) const;
-	Node<T1, T2>* findLMN(const Node<T1, T2>* const node) const;
+	Node<T1, T2>* findRMN(Node<T1, T2>* const node) const;
+	Node<T1, T2>* findLMN(Node<T1, T2>* const node) const;
+	Node<T1, T2>* splay(Node<T1, T2> *node, const T1 &id);
 	void printNode(Node<T1, T2> *node) const;
 public :
 	SplayTree();
@@ -46,7 +47,7 @@ public :
 
 	int getSize() const { return size; }
 	int getHeight() const { return root->getHeight(); }
-	T2 *find(const T1 &id) const;
+	T2 *find(const T1 &id);
 	T1 rootID() const { return root->getID(); }
 	bool print() const;
 };
@@ -262,7 +263,7 @@ template<class T1, class T2>
 int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) {
 	
 	// no adjust needed
-	if (cmp(id, node->getID()) = 0)
+	if (cmp(id, node->getID()) == 0)
 		return 0;
 	if ((cmp(id, node->getID()) < 0) && (node->getLft() == NULL))
 		return 0;
@@ -270,7 +271,7 @@ int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) {
 		return 0;
 	
 	// zig
-	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) = 0))
+	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) == 0))
 		return 1;
 	if ((cmp(id, node->getID()) < 0) && (cmp(id, node->getLft()->getID()) < 0) && (node->getLft()->getLft() == NULL))
 		return 1;
@@ -278,7 +279,7 @@ int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) {
 		return 1;
 	
 	// zag
-	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) = 0))
+	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) == 0))
 		return 2;
 	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) < 0) && (node->getRgt()->getLft() == NULL))
 		return 2;
@@ -314,7 +315,7 @@ int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) {
 //							KC 2015-02-14
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
-Node<T1, T2>* SplayTree<T1, T2>::findRMN(const Node<T1, T2>* const node) const {
+Node<T1, T2>* SplayTree<T1, T2>::findRMN(Node<T1, T2>* const node) const {
 	Node<T1, T2>* RMN = &(*node);
 	if (RMN == NULL)
 		return NULL;
@@ -335,12 +336,12 @@ Node<T1, T2>* SplayTree<T1, T2>::findRMN(const Node<T1, T2>* const node) const {
 //							KC 2015-02-14
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
-Node<T1, T2>* SplayTree<T1, T2>::findLMN(const Node<T1, T2>* const node) const {
+Node<T1, T2>* SplayTree<T1, T2>::findLMN(Node<T1, T2>* const node) const {
 	Node<T1, T2>* LMN = &(*node);
 	if (LMN == NULL)
 		return NULL;
 	while (LMN->getLft() != NULL)
-		LMN = RMN->getLft();
+		LMN = LMN->getLft();
 	return LMN;
 }
 
@@ -351,19 +352,20 @@ Node<T1, T2>* SplayTree<T1, T2>::findLMN(const Node<T1, T2>* const node) const {
 //				const T1 &id - the id of the node that is to be rotated to the top
 // USES GLOBAL: none
 // MODIFIES GL: root (possible)
-//     RETURNS: bool
+//     RETURNS: Node<T1, T2>*
 //      AUTHOR: Kingston Chan
 // AUTHOR/DATE: KC 2015-02-14
 //							KC 2015-02-14
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
-bool SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
+Node<T1, T2>* SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
 	Node<T1, T2> *L = NULL;
 	Node<T1, T2> *R = NULL;
 	Node<T1, T2> *N1 = NULL;
 	Node<T1, T2> *N2 = NULL;
 	Node<T1, T2> *RMN = NULL;
 	Node<T1, T2> *LMN = NULL;
+	int Case = -1;
 	if (N0 == NULL)
 		return NULL;
 	while ((N0 != NULL) && (N0->getID() != id)) {
@@ -374,7 +376,7 @@ bool SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
 
 		case 1: // zig
 			N1 = N0->getLft();
-			N0->AddLft(NULL);
+			N0->AddLft((Node<T1, T2>*)NULL);
 			LMN = findLMN(R);
 			if (LMN == NULL)
 				R = N0;
@@ -382,10 +384,11 @@ bool SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
 				LMN->AddLft(N0);
 			N0 = N1;
 			N1 = NULL;
+			break;
 
 		case 2: // zag
 			N1 = N0->getRgt();
-			N0->AddRgt(NULL);
+			N0->AddRgt((Node<T1, T2>*)NULL);
 			RMN = findRMN(L);
 			if (RMN == NULL)
 				L = N0;
@@ -393,40 +396,43 @@ bool SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
 				RMN->AddRgt(N0);
 			N0 = N1;
 			N1 = NULL;
+			break;
 
 		case 3: // zig-zig
 			N1 = N0->getLft();
 			N2 = N1->getLft();
 			N0->AddLft(N1->getRgt());
 			N1->AddRgt(N0);
-			N1->AddLft(NULL);
+			N1->AddLft((Node<T1, T2>*)NULL);
 			LMN = findLMN(R);
-			if (RMN == NULL)
+			if (LMN == NULL)
 				R = N1;
 			else
 				LMN->AddLft(N1);
 			N0 = N2;
 			N1 = N2 = NULL;
+			break;
 
 		case 4: // zag-zag
 			N1 = N0->getRgt();
 			N2 = N1->getRgt();
 			N0->AddRgt(N1->getLft());
 			N1->AddLft(N0);
-			N1->AddRgt(NULL);
+			N1->AddRgt((Node<T1, T2>*)NULL);
 			RMN = findRMN(L);
 			if (RMN == NULL)
 				L = N1;
 			else
-				RMN->AddLft(N1);
+				RMN->AddRgt(N1);
 			N0 = N2;
 			N1 = N2 = NULL;
+			break;
 
 		case 5: // zig-zag
 			N1 = N0->getLft();
 			N2 = N1->getRgt();
-			N0->AddLft(NULL);
-			N1->AddRgt(NULL);
+			N0->AddLft((Node<T1, T2>*)NULL);
+			N1->AddRgt((Node<T1, T2>*)NULL);
 			LMN = findLMN(R);
 			RMN = findRMN(L);
 			if (LMN == NULL)
@@ -439,12 +445,13 @@ bool SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
 				RMN->AddRgt(N1);
 			N0 = N2;
 			N1 = N2 = NULL;
+			break;
 
 		case 6: // zag-zig
 			N1 = N0->getRgt();
 			N2 = N1->getLft();
-			N0->AddRgt(NULL);
-			N1->AddLft(NULL);
+			N0->AddRgt((Node<T1, T2>*)NULL);
+			N1->AddLft((Node<T1, T2>*)NULL);
 			LMN = findLMN(R);
 			RMN = findRMN(L);
 			if (LMN == NULL)
@@ -457,10 +464,11 @@ bool SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
 				RMN->AddRgt(N0);
 			N0 = N2;
 			N1 = N2 = NULL;
+			break;
 
 		default:
 			throw SplayERR("Case out of range");
-			return false;
+			return NULL;
 		}
 	}
 
@@ -470,13 +478,14 @@ Break_While_Loop : // reassembly
 	if (LMN == NULL)
 		R = N0->getRgt();
 	else
-		LMN->AddLft(N0-getRgt());
+		LMN->AddLft(N0->getRgt());
 	if (RMN == NULL)
 		L = N0->getLft();
 	else
 		RMN->AddRgt(N0->getLft());
 	N0->AddLft(L);
 	N0->AddRgt(R);
+	return N0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -494,11 +503,14 @@ template<class T1, class T2>
 bool SplayTree<T1, T2>::Insert(const T1 &id) {
 	Node<T1, T2> *tmp = root;
 	Node<T1, T2> *nxt = root;
+
+	// special case
 	if (root == NULL) {
 		root = new Node<T1, T2>(id);
 		return true;
 	}
 
+	// find the position to insert
 	do {
 		tmp = nxt;
 		if (cmp(id, tmp->getID()) < 0)
@@ -509,13 +521,16 @@ bool SplayTree<T1, T2>::Insert(const T1 &id) {
 			break;
 	} while (nxt != NULL);
 	
-	if (cmp(id, tmp->getID()) = 0)
+	// insert
+	if (cmp(id, tmp->getID()) == 0)
 		return true;
 	if (cmp(id, tmp->getID()) < 0)
 		tmp->AddLft(id);
 	else if (cmp(id, tmp->getID()) > 0)
 		tmp->AddRgt(id);
-	splay(root, id);
+
+	// splay
+	root = splay(root, id);
 	return true;
 }
 
@@ -555,8 +570,25 @@ bool SplayTree<T1, T2>::empty() {
 	return true;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//        NAME: find
+// DESCRIPTION: To find a Node with given id.
+//   ARGUMENTS: none
+// USES GLOBAL: none
+// MODIFIES GL: root (possible)
+//     RETURNS: T2*
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-15
+//							KC 2015-02-15
+////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
-T2* SplayTree<T1, T2>::find(const T1 &id) const;
+T2* SplayTree<T1, T2>::find(const T1 &id) {
+	root = splay(root, id);
+	if (cmp(id, root->getID()) != 0)
+		return NULL;
+	else
+		return root->getRcd();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: print
