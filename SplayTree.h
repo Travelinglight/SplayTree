@@ -21,12 +21,12 @@ private :
 	int size;
 	int(*cmp)(const T1 &a, const T1 &b);
 
-
-	int judgeCase(Node<T1, T2> *node, const T1 &id);
+	void printNode(Node<T1, T2> *node) const;
+	int calcSize(const Node<T1, T2> * const node) const;
+	int judgeCase(Node<T1, T2> *node, const T1 &id) const;
 	Node<T1, T2>* findRMN(Node<T1, T2>* const node) const;
 	Node<T1, T2>* findLMN(Node<T1, T2>* const node) const;
 	Node<T1, T2>* splay(Node<T1, T2> *node, const T1 &id);
-	void printNode(Node<T1, T2> *node) const;
 public :
 	SplayTree();
 	SplayTree(int(*compare)(const T1 &a, const T1 &b));
@@ -248,6 +248,25 @@ bool SplayTree<T1, T2>::addRoot(const Node<T1, T2> &New) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+//        NAME: calcSize
+// DESCRIPTION: To calculate the size of the tree with the root "node".
+//   ARGUMENTS: const Node<T1, T2> * const node - the root the of tree
+// USES GLOBAL: none
+// MODIFIES GL: none
+//     RETURNS: int
+//      AUTHOR: Kingston Chan
+// AUTHOR/DATE: KC 2015-02-10
+//							KC 2015-02-10
+////////////////////////////////////////////////////////////////////////////////
+template<class T1, class T2>
+int SplayTree<T1, T2>::calcSize(const Node<T1, T2> * const node) const {
+	if (node == NULL)
+		return 0;
+	else
+		return calcSize(node->getLft()) + calcSize(node->getRgt()) + 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 //        NAME: judgeCase
 // DESCRIPTION: To decide the rotation type for splay function.
 //   ARGUMENTS: Node<T1, T2> *node - the root of the subtree that needs rotation
@@ -260,7 +279,7 @@ bool SplayTree<T1, T2>::addRoot(const Node<T1, T2> &New) {
 //							KC 2015-02-14
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
-int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) {
+int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) const {
 	
 	// no adjust needed
 	if (cmp(id, node->getID()) == 0)
@@ -301,6 +320,8 @@ int SplayTree<T1, T2>::judgeCase(Node<T1, T2> *node, const T1 &id) {
 	// zag-zig
 	if ((cmp(id, node->getID()) > 0) && (cmp(id, node->getRgt()->getID()) < 0))
 		return 6;
+
+	return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,7 +389,7 @@ Node<T1, T2>* SplayTree<T1, T2>::splay(Node<T1, T2> *N0, const T1 &id) {
 	int Case = -1;
 	if (N0 == NULL)
 		return NULL;
-	while ((N0 != NULL) && (N0->getID() != id)) {
+	while ((N0 != NULL) && (cmp(id, N0->getID()))) {
 		Case = judgeCase(N0, id);
 		switch(Case) {
 		case 0: // found
@@ -547,6 +568,24 @@ bool SplayTree<T1, T2>::Insert(const T1 &id) {
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
 bool SplayTree<T1, T2>::Delete(const T1 &id) {
+	Node<T1, T2>* tmp;
+
+	// the tree is empty
+	if (root == NULL)
+		return true;
+
+	root = splay(root, id);
+	if (cmp(id, root->getID()) != 0)
+		return true;
+	if (root->getLft() == NULL)
+		tmp = root->getRgt();
+	else {
+		tmp = root->getLft();
+		tmp = splay(tmp, id);
+		tmp->AddRgt(root->getRgt());
+	}
+	root = tmp;
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
