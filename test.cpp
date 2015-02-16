@@ -1,4 +1,5 @@
 #include "SplayTree.h"
+#include <string>
 using namespace std;
 
 class A {
@@ -24,22 +25,22 @@ int cmp(const A &a, const A &b) {
 int main() {
 	{
 		A a(3), b(4);
-		SplayTree<A> AT1;
-		//SplayTree<int> AT2(2);
-		SplayTree<A> AT3(a, &cmp);
-		SplayTree<A, int> AT4(4, 2, &cmp);
+		SplayTree<A> ST1;
+		SplayTree<int> ST2(2);
+		SplayTree<A> ST3(a, NULL, cmp);
+		SplayTree<A, int> ST4(4, 2, cmp);
 		// Made the (*cmp) public
-		//cout << AT3.cmp(a, b) << endl;
-		//cout << AT4.cmp(b, a) << endl;
-		SplayTree<A, int> AT5(AT4);
-		//cout << AT5.cmp(a, a) << endl
+		//cout << ST3.cmp(a, b) << endl;
+		//cout << ST4.cmp(b, a) << endl;
+		SplayTree<A, int> ST5(ST4);
+		//cout << ST5.cmp(a, a) << endl
 
-		AT1.addRoot(1);
-		SplayTree<A, int> AT6;
-		AT6.addRoot(6, 8);
-		AT6.setCmp(&cmp);
-		cout << *(AT6.find(6)) << endl;
-		AT6.empty();
+		ST1.addRoot(1);
+		SplayTree<A, int> ST6;
+		ST6.addRoot(6, 8);
+		ST6.setCmp(cmp);
+		cout << *(ST6.find(6)) << endl;
+		ST6.empty();
 	}
 	{
 		SplayTree<A> ST(cmp);
@@ -70,12 +71,12 @@ int main() {
 			ST.Insert(8 - i);
 		}
 		ST.print();
-		cout << "--------------------------------------" << endl;
-		ST.find(1);
-		ST.print();
-		/*ST.Delete(1);
-		cout << "--------------------------------------" << endl;
-		ST.print();*/
+		//ST.find(1);
+		//cout << "--------------------------------------" << endl;
+		//ST.print();
+		//ST.Delete(1);
+		//cout << "--------------------------------------" << endl;
+		//ST.print();
 		ST.Delete(2);
 		cout << "--------------------------------------" << endl;
 		ST.print();
