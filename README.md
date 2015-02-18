@@ -1,6 +1,6 @@
 SplayTree(C++)
 =======================
-This is the SplayTree template implemented in C++.
+This is the top-down SplayTree template implemented in C++.
 Template
 -----------------------
 - **T1** &#160;The type of the Node's ID;

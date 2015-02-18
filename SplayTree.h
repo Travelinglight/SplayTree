@@ -626,7 +626,7 @@ SplayTree<T1, T2>::~SplayTree() {
 	cout << "Destructor: ";
 	if (root != NULL)
 		cout << root->getID();
-	cout << endl;
+	//cout << endl;
 	delete root;
 }
 
