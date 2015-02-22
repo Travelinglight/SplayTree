@@ -49,6 +49,15 @@ inline int MAX(int a, int b) {
 	return a > b ? a : b;
 }
 
+template<typename T1>
+int dCmp(const T1 &a, const T1 &b) {
+	if (a > b)
+		return 1;
+	if (a < b)
+		return -1;
+	return 0;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////Tree node/////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -475,9 +484,9 @@ public :
 	// constructors and destructor
 	SplayTree();
 	SplayTree(int(*compare)(const T1 &a, const T1 &b));
-	SplayTree(const Node<T1, T2> &head, int(*compare)(const T1 &a, const T1 &b) = NULL);
-	SplayTree(const T1 &rootID, const T2 * const rootRcd = NULL, int(*compare)(const T1 &a, const T1 &b) = NULL);
-	SplayTree(const T1 &rootID, const T2 &rootRcd, int(*compare)(const T1 &a, const T1 &b) = NULL);
+	SplayTree(const Node<T1, T2> &head, int(*compare)(const T1 &a, const T1 &b) = dCmp);
+	SplayTree(const T1 &rootID, const T2 * const rootRcd = NULL, int(*compare)(const T1 &a, const T1 &b) = dCmp);
+	SplayTree(const T1 &rootID, const T2 &rootRcd, int(*compare)(const T1 &a, const T1 &b) = dCmp);
 	SplayTree(const SplayTree<T1, T2> &New);
 	~SplayTree();
 
@@ -512,13 +521,13 @@ template<class T1, class T2>
 SplayTree<T1, T2>::SplayTree() {
 	root = NULL;
 	size = 0;
-	cmp = NULL;
+	cmp = dCmp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 //        NAME: SplayTree
 // DESCRIPTION: Constructor of SplayTree class.
-//   ARGUMENTS: int(*compare)(const T1 &a, const T1 &b) = NULL - the compare function
+//   ARGUMENTS: int(*compare)(const T1 &a, const T1 &b) = dCmp - the compare function
 // USES GLOBAL: none
 // MODIFIES GL: root, size, cmp;
 //     RETURNS: none
@@ -536,7 +545,7 @@ SplayTree<T1, T2>::SplayTree(int(*compare)(const T1 &a, const T1 &b)) {
 //        NAME: SplayTree
 // DESCRIPTION: Constructor of SplayTree class.
 //   ARGUMENTS: const Node<T1, T2> &head - the root node of the Splay tree
-//				int(*compare)(const T1 &a, const T1 &b) = NULL - the compare function
+//				int(*compare)(const T1 &a, const T1 &b) = dCmp - the compare function
 // USES GLOBAL: none
 // MODIFIES GL: root, size, cmp;
 //     RETURNS: none
@@ -555,7 +564,7 @@ SplayTree<T1, T2>::SplayTree(const Node<T1, T2> &head, int(*compare)(const T1 &a
 //        NAME: SplayTree
 // DESCRIPTION: Constructor of SplayTree class.
 //   ARGUMENTS: const T1 &rootID - the ID of the root node
-//				const T2 * const rootRcd = NULL - the initial root record
+//				const T2 * const rootRcd = dCmp - the initial root record
 //				int(*compare)(const T1 &a, const T1 &b) = NULL - the compare function
 // USES GLOBAL: none
 // MODIFIES GL: root, size, cmp;
@@ -576,7 +585,7 @@ SplayTree<T1, T2>::SplayTree(const T1 &rootID, const T2 * const rootRcd, int(*co
 // DESCRIPTION: Constructor of SplayTree class.
 //   ARGUMENTS: const T1 &rootID - the ID of the root node
 //				const T2 &rootRcd - the initial root record
-//				int(*compare)(const T1 &a, const T1 &b) = NULL - the compare function
+//				int(*compare)(const T1 &a, const T1 &b) = dCmp - the compare function
 // USES GLOBAL: none
 // MODIFIES GL: root, size, cmp;
 //     RETURNS: none
@@ -623,9 +632,9 @@ SplayTree<T1, T2>::SplayTree(const SplayTree<T1, T2> &Old) {
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
 SplayTree<T1, T2>::~SplayTree() {
-	cout << "Destructor: ";
-	if (root != NULL)
-		cout << root->getID();
+	//cout << "Destructor: ";
+	//if (root != NULL)
+	//	cout << root->getID();
 	//cout << endl;
 	delete root;
 }
