@@ -36,7 +36,17 @@ Kingston Chan
 using namespace std;
 
 class NULLT {};
-class SplayERR {
+
+class NodeERR {	// used to throw out when error occurs
+public :
+	std::string error;
+	NodeERR();
+	NodeERR(std::string info) {
+		error = info;
+	}
+};
+
+class SplayERR { // used to throw out when error occurs
 public :
 	std::string error;
 	SplayERR();
@@ -113,6 +123,8 @@ template<class T1, class T2>
 Node<T1, T2>::Node() {
 	height = 0;
 	Rcd = new T2;
+	if (Rcd == NULL)
+		throw NodeERR("Out of space");
 	Lft = Rgt = NULL;
 }
 
@@ -132,6 +144,8 @@ template<class T1, class T2>
 Node<T1, T2>::Node(const T1 &id, const T2 * const rcd) {
 	ID = id;
 	Rcd = new T2;
+	if (Rcd == NULL)
+		throw NodeERR("Out of space");
 	if (rcd != NULL)
 		*Rcd = *rcd;
 	Lft = Rgt = NULL;	// no sons at first
@@ -154,6 +168,8 @@ template<class T1, class T2>
 Node<T1, T2>::Node(const T1 &id, const T2 &rcd) {
 	ID = id;
 	Rcd = new T2;
+	if (Rcd == NULL)
+		throw NodeERR("Out of space");
 	*Rcd = rcd;
 	Lft = Rgt = NULL;	// no sons at first
 	height = 0;
@@ -251,8 +267,13 @@ bool Node<T1, T2>::copy(const Node<T1, T2> * const b) {
 	// copy ID, record and height
 	ID = b->ID;
 	if (b->Rcd != NULL) {
-		if (Rcd == NULL)
+		if (Rcd == NULL) {
 			Rcd = new T2;
+			if (Rcd == NULL) {
+				throw NodeERR("Out of space");
+				return false;
+			}
+		}
 		*Rcd = *(b->Rcd);
 	}
 	else {
@@ -265,8 +286,13 @@ bool Node<T1, T2>::copy(const Node<T1, T2> * const b) {
 
 	// copy the left son
 	if (b->Lft != NULL) {
-		if (Lft == NULL)
+		if (Lft == NULL) {
 			Lft = new Node<T1, T2>;
+			if (Lft == NULL) {
+				throw NodeERR("Out of space");
+				return false;
+			}
+		}
 		Lft->copy(b->Lft);
 	}
 	else {
@@ -278,8 +304,13 @@ bool Node<T1, T2>::copy(const Node<T1, T2> * const b) {
 
 	// copy the right son
 	if (b->Rgt != NULL) {
-		if (Rgt == NULL)
+		if (Rgt == NULL) {
 			Rgt = new Node<T1, T2>;
+			if (Rgt == NULL) {
+				throw NodeERR("Out of space");
+				return false;
+			}	
+		}
 		Rgt->copy(b->Rgt);
 	}
 	else {
@@ -372,6 +403,10 @@ template<class T1, class T2>
 bool Node<T1, T2>::AddLft(const T1 &lftID, const T2 * const lftRcd) {
 
 	Node *Tmp = new Node(lftID, lftRcd);
+	if (Tmp == NULL) {
+		throw NodeERR("Out of space");
+		return false;
+	}
 	Lft = Tmp;
 
 	// update the height
@@ -426,6 +461,10 @@ template<class T1, class T2>
 bool Node<T1, T2>::AddRgt(const T1 &rgtID, const T2 * const RgtRcd = NULL) {
 
 	Node *Tmp = new Node(rgtID, RgtRcd);
+	if (Tmp == NULL) {
+		throw NodeERR("Out of space");
+		return false;
+	}
 	Rgt = Tmp;
 
 	// update the height
@@ -555,7 +594,9 @@ SplayTree<T1, T2>::SplayTree(int(*compare)(const T1 &a, const T1 &b)) {
 ////////////////////////////////////////////////////////////////////////////////
 template<class T1, class T2>
 SplayTree<T1, T2>::SplayTree(const Node<T1, T2> &head, int(*compare)(const T1 &a, const T1 &b)) {
-	root = new Node<T1, T2>(head);
+	root = new Node<T1, T2>(head.ID, head.Rcd);
+	if (root == NULL)
+		throw SplayERR("Out of space");
 	size = calcSize(root);
 	cmp = compare;
 }
@@ -576,6 +617,8 @@ SplayTree<T1, T2>::SplayTree(const Node<T1, T2> &head, int(*compare)(const T1 &a
 template<class T1, class T2>
 SplayTree<T1, T2>::SplayTree(const T1 &rootID, const T2 * const rootRcd, int(*compare)(const T1 &a, const T1 &b)) {
 	root = new Node<T1, T2>(rootID, rootRcd);
+	if (root == NULL)
+		throw SplayERR("Out of space");
 	size = 1;
 	cmp = compare;
 }
@@ -596,6 +639,8 @@ SplayTree<T1, T2>::SplayTree(const T1 &rootID, const T2 * const rootRcd, int(*co
 template<class T1, class T2>
 SplayTree<T1, T2>::SplayTree(const T1 &rootID, const T2 &rootRcd, int(*compare)(const T1 &a, const T1 &b)) {
 	root = new Node<T1, T2>(rootID, rootRcd);
+	if (root == NULL)
+		throw SplayERR("Out of space");
 	size = 1;
 	cmp = compare;
 }
@@ -616,6 +661,10 @@ SplayTree<T1, T2>::SplayTree(const SplayTree<T1, T2> &Old) {
 	size = Old.size;
 	cmp = Old.cmp;
 	root = new Node<T1, T2>;
+	if (root == NULL)
+		throw SplayERR("Out of space");
+	if (root == NULL)
+		throw SplayERR("Out of space");
 	root->copy(Old.root);
 }
 
@@ -693,6 +742,10 @@ bool SplayTree<T1, T2>::addRoot(const T1 &id, const T2 * const rcd) {
 		throw SplayERR("root already exists");
 	}
 	root = new Node<T1, T2>(id, rcd);
+	if (root == NULL) {
+		throw SplayERR("Out of space");
+		return false;
+	}
 	size = calcSize(root);
 	return true;
 }
@@ -715,6 +768,10 @@ bool SplayTree<T1, T2>::addRoot(const T1 &id, const T2 &rcd) {
 		throw SplayERR("root already exists");
 	}
 	root = new Node<T1, T2>(id, rcd);
+	if (root == NULL) {
+		throw SplayERR("Out of space");
+		return false;
+	}
 	size = calcSize(root);
 	return true;
 }
@@ -736,6 +793,10 @@ bool SplayTree<T1, T2>::addRoot(const Node<T1, T2> &New) {
 		throw SplayERR("root already exists");
 	}
 	root = new Node<T1, T2>(New);
+	if (root == NULL) {
+		throw SplayERR("Out of space");
+		return false;
+	}
 	size = calcSize(root);
 	return true;
 }
@@ -1042,6 +1103,10 @@ bool SplayTree<T1, T2>::Insert(const T1 &id) {
 	// special case
 	if (root == NULL) {
 		root = new Node<T1, T2>(id);
+		if (root == NULL) {
+			throw SplayERR("Out of space");
+			return false;
+		}
 		return true;
 	}
 
