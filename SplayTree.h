@@ -660,12 +660,12 @@ template<class T1, class T2>
 SplayTree<T1, T2>::SplayTree(const SplayTree<T1, T2> &Old) {
 	size = Old.size;
 	cmp = Old.cmp;
-	root = new Node<T1, T2>;
-	if (root == NULL)
-		throw SplayERR("Out of space");
-	if (root == NULL)
-		throw SplayERR("Out of space");
-	root->copy(Old.root);
+	if (Old.root != NULL) {
+		root = new Node<T1, T2>;
+		if (root == NULL)
+			throw SplayERR("Out of space");
+		root->copy(Old.root);
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
